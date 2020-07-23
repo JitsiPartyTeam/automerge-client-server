@@ -57,19 +57,27 @@ export default class AutomergeClient extends EventTarget {
 
   private_onMessage(msg) {
     const frame = JSON.parse(msg.data)
-    console.info('message', frame)
 
     if (frame.action === 'automerge') {
       this.autocon.receiveMsg(frame.data)
+      this.dispatchEvent(new CustomEvent('automerge', {
+        detail: {
+          data: frame.data
+        }
+      }))
     } else if (frame.action === 'error') {
       console.error('Recieved server-side error ' + frame.message)
       this.dispatchEvent(new CustomEvent('error', {
-        message: frame.message,
+        detail: {
+          message: frame.message,
+        }
       }))
     } else if (frame.action === 'subscribed') {
       console.info('Subscribed to ' + JSON.stringify(frame.id))
       this.dispatchEvent(new CustomEvent('subscribed', {
-        id: frame.id,
+        detail: {
+          id: frame.id,
+        }
       }))
     } else {
       console.error('Unknown action "' + frame.action + '"')
