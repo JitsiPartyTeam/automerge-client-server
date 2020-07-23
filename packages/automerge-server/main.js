@@ -67,7 +67,7 @@ class Document {
     docSet.setDoc(this.id, this.doc)
 
     const handler = (docId, doc) => {
-      console.log('handler', docId, doc)
+      console.info('handler', docId, doc)
       if (docId !== this.id) return // not this doc
       if (doc === this.doc) return // already handled
       this.doc = doc
@@ -91,7 +91,7 @@ class Document {
     docSet.unregisterHandler(set.handler)
     this.sets = this.sets.filter(set => set.set !== docSet)
 
-    this.onReferenceCountChange(this.sets.length)
+    this.onReferenceCountChange(this.id, this.sets.length)
   }
 }
 
@@ -125,6 +125,7 @@ export default class AutomergeServer {
 
     if (count === 0) {
       delete this.docs[id]
+      console.info(`Delete document with id ${id}`)
     }
   }
 
@@ -245,7 +246,6 @@ export default class AutomergeServer {
     }
 
     const automergeMessage = data => {
-      console.log(data)
       if (subscribedDocuments.some(doc => doc.id === data.docId)) {
         autocon.receiveMsg(data)
       } else {

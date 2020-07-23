@@ -23,7 +23,6 @@ const automergeServer = new AutomergeServer({
       try {
         return await promisify(fs.readFile)(fname(id), 'utf8')
       } catch (e) {
-        console.log('catch load fail')
         if (e.code === 'ENOENT') return null // create new
         return false // 404
       }
