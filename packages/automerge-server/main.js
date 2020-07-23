@@ -41,10 +41,11 @@ Sent after successful subscription. Contains id field as doc identifier.
 */
 
 class Document {
-  constructor(id, onChange) {
+  constructor(id, onChange, onReferenceCountChange) {
     this.sets = [] // { set, handler }
     this.id = id
     this.onChange = onChange
+    this.onReferenceCountChange = onReferenceCountChange
   }
 
   set(doc) {
@@ -79,6 +80,8 @@ class Document {
     }
     docSet.registerHandler(handler)
     this.sets.push({ set: docSet, handler })
+
+    this.onReferenceCountChange(this.id, this.sets.length)
   }
 
   removeFromSet(docSet) {
@@ -87,6 +90,8 @@ class Document {
 
     docSet.unregisterHandler(set.handler)
     this.sets = this.sets.filter(set => set.set !== docSet)
+
+    this.onReferenceCountChange(this.sets.length)
   }
 }
 
@@ -107,10 +112,20 @@ export default class AutomergeServer {
 
     this.docs = {}
     this.onChange = this.onChange.bind(this)
+    this.onReferenceCountChange = this.onReferenceCountChange.bind(this)
   }
 
   onChange(id, doc) {
     this.saveDocument(id, Automerge.save(doc), doc)
+  }
+
+  onReferenceCountChange(id, count) {
+    if (!this.docs[id])
+      throw new Error(`Can not find doc with id ${id}`)
+
+    if (count === 0) {
+      delete this.docs[id]
+    }
   }
 
   getDoc(id) {
@@ -136,7 +151,7 @@ export default class AutomergeServer {
       })
       .then(doc => {
         if (doc === false) return false // 404
-        return new Document(id, this.onChange).set(doc)
+        return new Document(id, this.onChange, this.onReferenceCountChange).set(doc)
       })
     return this.docs[id]
   }

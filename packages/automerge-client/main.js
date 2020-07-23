@@ -37,7 +37,7 @@ function doLoad(string) {
   return ret
 }
 
-export default class AutomergeClient {
+export default class AutomergeClient extends EventEmitter {
   constructor({ socket, save, savedData, onChange } = {}) {
     if (!socket)
       throw new Error('You have to specify websocket as socket param')
@@ -62,8 +62,10 @@ export default class AutomergeClient {
       this.autocon.receiveMsg(frame.data)
     } else if (frame.action === 'error') {
       console.error('Recieved server-side error ' + frame.message)
+      this.emit('error', frame.message)
     } else if (frame.action === 'subscribed') {
       console.error('Subscribed to ' + JSON.stringify(frame.id))
+      this.emit('subscribed', frame.id)
     } else {
       console.error('Unknown action "' + frame.action + '"')
     }
