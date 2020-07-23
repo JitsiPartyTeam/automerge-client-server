@@ -39,6 +39,7 @@ function doLoad(string) {
 
 export default class AutomergeClient extends EventTarget {
   constructor({ socket, save, savedData, onChange } = {}) {
+    super()
     if (!socket)
       throw new Error('You have to specify websocket as socket param')
     this.socket = socket
@@ -51,12 +52,12 @@ export default class AutomergeClient extends EventTarget {
     socket.addEventListener('open', this.private_onOpen.bind(this))
     socket.addEventListener('close', this.private_onClose.bind(this))
     socket.addEventListener('error', evt => console.log('error', evt))
-    socket.addEventListener('connecting', evt => console.log('connecting', evt))
+    socket.addEventListener('connecting', evt => console.info('connecting', evt))
   }
 
   private_onMessage(msg) {
     const frame = JSON.parse(msg.data)
-    console.log('message', frame)
+    console.info('message', frame)
 
     if (frame.action === 'automerge') {
       this.autocon.receiveMsg(frame.data)
@@ -66,7 +67,7 @@ export default class AutomergeClient extends EventTarget {
         message: frame.message,
       }))
     } else if (frame.action === 'subscribed') {
-      console.error('Subscribed to ' + JSON.stringify(frame.id))
+      console.info('Subscribed to ' + JSON.stringify(frame.id))
       this.dispatchEvent(new CustomEvent('subscribed', {
         id: frame.id,
       }))
@@ -76,7 +77,7 @@ export default class AutomergeClient extends EventTarget {
   }
 
   private_onOpen() {
-    console.log('open')
+    console.info('open')
     const send = data => {
       this.socket.send(JSON.stringify({ action: 'automerge', data }))
     }
@@ -106,7 +107,7 @@ export default class AutomergeClient extends EventTarget {
   }
 
   private_onClose() {
-    console.log('close')
+    console.info('close')
     if (this.autocon) {
       this.autocon.close()
     }
@@ -128,7 +129,7 @@ export default class AutomergeClient extends EventTarget {
 
   subscribe(ids) {
     if (ids.length <= 0) return
-    console.log('Trying to subscribe to ' + JSON.stringify(ids))
+    console.info('Trying to subscribe to ' + JSON.stringify(ids))
     this.subscribeList = this.subscribeList.concat(ids).filter(unique)
     if (this.socket.readyState === 1) {
       // OPEN
