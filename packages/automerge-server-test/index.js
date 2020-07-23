@@ -19,7 +19,7 @@ function fname(id) {
 
 const automergeServer = new AutomergeServer({
   loadDocument: async id => {
-    if (/^([a-z]|[A-Z]|[0-9]|\/)+$/.exec(id)) {
+    if (/^([a-z]|[A-Z]|[0-9]|\/|-)+$/.exec(id)) {
       try {
         return await promisify(fs.readFile)(fname(id), 'utf8')
       } catch (e) {
