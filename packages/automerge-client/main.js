@@ -42,9 +42,12 @@ export default class AutomergeClient extends EventTarget {
     super()
     if (!socket)
       throw new Error('You have to specify websocket as socket param')
+    if (!savedData)
+      savedData = {}
+
     this.socket = socket
     this.save = save
-    this.docs = doLoad(savedData)
+    this.docs = typeof savedData === 'string' ? doLoad(savedData) : savedData
     this.onChange = onChange || (() => {})
     this.subscribeList = []
 
